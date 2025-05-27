@@ -1,7 +1,7 @@
 import Toast from '@/components/Toast';
 import { useAuthStore } from '@/store/authStore';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -16,6 +16,7 @@ export default function RootLayout() {
     // You can add custom fonts here if needed
   });
   const [isReady, setIsReady] = useState(false);
+    const segments = useSegments();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
 
@@ -54,14 +55,16 @@ export default function RootLayout() {
 
   // Handle initial navigation based on auth state
   useEffect(() => {
+    const inAuthGroup = segments[0] === '(tabs)';
     if (isReady) {
-      if (isAuthenticated) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/');
-      }
+       if (!isAuthenticated && inAuthGroup) {
+      // Redirect to the splash screen if not authenticated and trying to access protected routes
+      router.replace('/');
+    } else if (isAuthenticated && !inAuthGroup) {
+      // Redirect to the main app if authenticated and on auth screens
+      router.replace('/(tabs)');
     }
-  }, [isReady, isAuthenticated]);
+  }}, [isAuthenticated, segments]);
 
   // Keep showing the native splash screen until everything is ready
   if (!fontsLoaded || !isReady) {
