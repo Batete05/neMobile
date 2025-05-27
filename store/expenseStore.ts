@@ -69,3 +69,4 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
   }
 }));
+
